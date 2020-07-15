@@ -1,0 +1,46 @@
+version: '3.1'
+
+services:
+  db:
+    image: mysql
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: 8SLK3Bny
+      MYSQL_DATABASE: tor
+    volumes:
+      - .:/docker-entrypoint-initdb.d/
+    user: ${CURRENT_UID}
+
+  adminer:
+    depends_on:
+      - db
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    user: ${CURRENT_UID}
+  
+  frontend:
+    depends_on:
+      - db
+    image: fresh/frontend
+    restart: on-failure
+    ports:
+      - 80:8080
+    user: ${CURRENT_UID}
+
+  scrapy:
+    depends_on:
+      - db
+    image: fresh/scrapper
+    restart: on-failure
+    user: ${CURRENT_UID}
+
+  isup:
+    depends_on:
+      - db
+    image: fresh/isup
+    restart: on-failure
+    user: ${CURRENT_UID}
+

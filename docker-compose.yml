@@ -44,3 +44,9 @@ services:
     restart: on-failure
     user: ${CURRENT_UID}
 
+  memcached:
+    image: memcached
+    restart: on-failure
+    user: ${CURRENT_UID}
+
+

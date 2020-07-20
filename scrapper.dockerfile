@@ -7,4 +7,4 @@ RUN python2 -m pip install gunicorn
 RUN python2 -m pip install -r requirements.txt
 RUN groupadd -r freshonions && useradd --no-log-init -r -g freshonions freshonions
 USER freshonions
-CMD init/scraper-service.sh # to start crawling
+CMD /etc/init.d/tor start && init/scraper-service.sh # to start crawling

@@ -92,3 +92,13 @@ The solution to this problem is running multiple TOR instances and connecting to
 Debian (and ubuntu) comes with a useful program "tor-instance-create" for quickly creating multiple instances of TOR. I used Squid as my frontend proxy, but unfortunately it can't connect to SOCKS directly, so I used "privoxy" as an intermediate proxy. You will need one privoxy instance for every TOR instance. There is a script in "scripts/create_privoxy.sh" to help with creating privoxy instances on debian systems. It also helps to replace /etc/privoxy/default.filter with an empty file, to reduce CPU load by removing unnecessary regexes.
 
 Additionally, this resource https://www.howtoforge.com/ultimate-security-proxy-with-tor might be useful in setting up squid. If all you are doing is crawling and don't care about anonymity, I also recommend running TOR in tor2web mode (required recompilation) for increased speed
+
+## Docker compose
+
+You can also run fresh onion locally, you'll need Docker and Docker compose.
+'''
+make all
+'''
+
+will build all the different containers: frontend, MySQL, scrapper, isup (alive check) and cron
+connect to localhost:80 for web app, localhost:8080 for web database access

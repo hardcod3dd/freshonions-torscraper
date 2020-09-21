@@ -1,7 +1,7 @@
 #!make
 
 default: help
-all: frontend scrapper isup compose-start
+all: frontend scrapper isup proxy compose-start
 
 frontend: ## Build the wsgi frontend
 	@docker build -f frontend.dockerfile . -t fresh/frontend
@@ -11,6 +11,9 @@ scrapper: ## Build the scrapper container
 
 isup: ## Build the isup container
 	@docker build -f isup.dockerfile . -t fresh/isup
+
+proxy: ## Build the tor proxy
+	@docker build -f proxy.dockerfile . -t fresh/proxy
 
 compose-start: ## Setup a docker env with all the services
 	@CURRENT_UID=$(id -u):$(id -g) docker-compose up

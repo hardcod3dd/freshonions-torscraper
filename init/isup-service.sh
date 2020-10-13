@@ -5,4 +5,5 @@ DIR=$( cd "$(dirname "$0")" ; pwd -P )
 while true
 do
   $SCRIPTDIR/test_up.sh
+  sleep 300
 done

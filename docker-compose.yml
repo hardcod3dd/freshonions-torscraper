@@ -12,6 +12,19 @@ services:
       - .:/docker-entrypoint-initdb.d/
     user: ${CURRENT_UID}
 
+  memcached:
+    image: memcached
+    restart: on-failure
+    user: ${CURRENT_UID}
+
+  proxy:
+    image: dperson/torproxy
+    restart: always
+    ports:
+      - 8118:8118
+      - 9050:9050
+    user: ${CURRENT_UID}
+
   adminer:
     depends_on:
       - db
@@ -21,18 +34,11 @@ services:
       - 8080:8080
     user: ${CURRENT_UID}
   
-  frontend:
-    depends_on:
-      - db
-    image: fresh/frontend
-    restart: on-failure
-    ports:
-      - 5000:5000
-    user: ${CURRENT_UID}
-
   scrapy:
     depends_on:
       - db
+      - proxy
+      - memcached
     image: fresh/scrapper
     restart: on-failure
     user: ${CURRENT_UID}
@@ -40,13 +46,18 @@ services:
   isup:
     depends_on:
       - db
+      - proxy
+      - memcached
     image: fresh/isup
     restart: on-failure
     user: ${CURRENT_UID}
 
-  memcached:
-    image: memcached
+  frontend:
+    depends_on:
+      - db
+      - memcached
+    image: fresh/frontend
     restart: on-failure
+    ports:
+      - 5000:5000
     user: ${CURRENT_UID}
-
-

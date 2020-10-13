@@ -1,5 +1,5 @@
 import scrapy
-import urlparse 
+import urlparse
 import re
 from collections import *
 from pony.orm import *
@@ -17,19 +17,21 @@ import email_util
 import interesting_paths
 import tor_text
 
-SUBDOMAIN_PENALTY    = 6 * 60
-NORMAL_RAND_RANGE    = 2 * 60
+SUBDOMAIN_PENALTY = 6 * 60
+NORMAL_RAND_RANGE = 2 * 60
 SUBDOMAIN_RAND_RANGE = 6 * 60
-MAX_DEAD_IN_A_ROW    = 17
-PENALTY_BASE         = 1.5
+MAX_DEAD_IN_A_ROW = 17
+PENALTY_BASE = 1.5
 
 from scrapy.exceptions import IgnoreRequest
+
 
 def maybe_add_scheme(onion):
     o = onion.strip()
     if not re.match(r"^(http|https)://", o):
         o = ("http://%s/" % o)
     return o
+
 
 @db_session
 def domain_urls_down():
@@ -41,6 +43,7 @@ def domain_urls_down():
         urls.append(domain.index_url())
     return urls
 
+
 @db_session
 def domain_urls_resurrect():
     urls = []
@@ -51,12 +54,14 @@ def domain_urls_resurrect():
         urls.append(domain.index_url())
     return urls
 
+
 @db_session
 def domain_urls():
     urls = []
     for domain in Domain.select():
         urls.append(domain.index_url())
     return urls
+
 
 @db_session
 def domain_urls_recent_no_crap():
@@ -68,6 +73,7 @@ def domain_urls_recent_no_crap():
         urls.append(domain.index_url())
     return urls
 
+
 @db_session
 def domain_urls_recent():
     urls = []
@@ -78,6 +84,7 @@ def domain_urls_recent():
         urls.append(domain.index_url())
     return urls
 
+
 @db_session
 def domain_urls_next_scheduled():
     urls = []
@@ -87,14 +94,17 @@ def domain_urls_next_scheduled():
         urls.append(domain.index_url())
     return urls
 
+
 @db_session
 def domain_urls_next_scheduled_old():
     urls = []
     now = datetime.now()
     event_horizon = now - timedelta(days=30)
-    for domain in Domain.select(lambda d: now > d.next_scheduled_check and d.last_alive > event_horizon).order_by(Domain.visited_at):
+    for domain in Domain.select(lambda d: now > d.next_scheduled_check and d.last_alive > event_horizon).order_by(
+            Domain.visited_at):
         urls.append(domain.index_url())
     return urls
+
 
 class TorSpider(scrapy.Spider):
     name = "tor"
@@ -110,40 +120,38 @@ class TorSpider(scrapy.Spider):
         ]
 
     custom_settings = {
-        'DOWNLOAD_MAXSIZE': (1024 * 1024)*2,
-        'BIG_DOWNLOAD_MAXSIZE': (1024 * 1024)*4,
+        'DOWNLOAD_MAXSIZE': (1024 * 1024) * 2,
+        'BIG_DOWNLOAD_MAXSIZE': (1024 * 1024) * 4,
         'ALLOW_BIG_DOWNLOAD': [
             '7cbqhjnlkivmigxf.onion'
         ],
         'INJECT_RANGE_HEADER': True,
         'ROBOTSTXT_OBEY': False,
-	    'CONCURRENT_REQUESTS' : 32,
-        'REACTOR_THREADPOOL_MAXSIZE' : 32,
-        'CONCURRENT_REQUESTS_PER_DOMAIN' : 4,
-        'DEPTH_PRIORITY' : 8,
+        'CONCURRENT_REQUESTS': 32,
+        'REACTOR_THREADPOOL_MAXSIZE': 32,
+        'CONCURRENT_REQUESTS_PER_DOMAIN': 4,
+        'DEPTH_PRIORITY': 8,
         'DOWNLOAD_TIMEOUT': 90,
         'RETRY_TIMES': 1,
-        'MAX_PAGES_PER_DOMAIN' : 1000,
+        'MAX_PAGES_PER_DOMAIN': 1000,
         'HTTPERROR_ALLOWED_CODES': handle_httpstatus_list,
         'RETRY_HTTP_CODES': [],
-        'DOWNLOADER_MIDDLEWARES' : {
-            'torscraper.middlewares.FilterDomainByPageLimitMiddleware' : 551,
-            'torscraper.middlewares.FilterTooManySubdomainsMiddleware' : 550,
-            'torscraper.middlewares.FilterDeadDomainMiddleware' : 556,
-            'torscraper.middlewares.AllowBigDownloadMiddleware' : 557,
-            'torscraper.middlewares.FilterNotScheduledMiddleware' : 558,
-         },
-         'SPIDER_MIDDLEWARES' : {
-            'torscraper.middlewares.InjectRangeHeaderMiddleware' : 543,
-         },
-        'USER_AGENT': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+        'DOWNLOADER_MIDDLEWARES': {
+            'torscraper.middlewares.FilterDomainByPageLimitMiddleware': 551,
+            'torscraper.middlewares.FilterTooManySubdomainsMiddleware': 550,
+            'torscraper.middlewares.FilterDeadDomainMiddleware': 556,
+            'torscraper.middlewares.AllowBigDownloadMiddleware': 557,
+            'torscraper.middlewares.FilterNotScheduledMiddleware': 558,
+        },
+        'SPIDER_MIDDLEWARES': {
+            'torscraper.middlewares.InjectRangeHeaderMiddleware': 543,
+        },
+        'USER_AGENT': 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.74 Safari/537.36 Edg/79.0.309.43'
     }
     spider_exclude = [
         'blockchainbdgpzk.onion',
         'ypqmhx5z3q5o6beg.onion'
     ]
-
-    
 
     def __init__(self, *args, **kwargs):
         super(TorSpider, self).__init__(*args, **kwargs)
@@ -163,45 +171,41 @@ class TorSpider(scrapy.Spider):
                     self.start_urls = domain_urls_next_scheduled()
         else:
             self.start_urls = domain_urls_recent_no_crap()
-        
-
-
-
 
     @db_session
     def update_page_info(self, url, title, code, is_frontpage=False, size=0):
-        
+
         if not Domain.is_onion_url(url):
             return False
-        
+
         if title == "ERROR: The requested URL could not be retrieved":
             return False
 
         failed_codes = [666, 503, 504, 502]
-        responded_codes = [200, 206,403, 500, 401, 301, 302, 304, 400]
-        if (hasattr(self, "only_success") and self.only_success == "yes" and 
-            code not in responded_codes):
+        responded_codes = [200, 206, 403, 500, 401, 301, 302, 304, 400]
+        if (hasattr(self, "only_success") and self.only_success == "yes" and
+                code not in responded_codes):
             return False
 
         if not title:
             title = ''
         parsed_url = urlparse.urlparse(url)
-        host  = parsed_url.hostname
+        host = parsed_url.hostname
         if host == "zlal32teyptf4tvi.onion":
             return False
 
-        port  = parsed_url.port
-        ssl   = parsed_url.scheme=="https://"
-        path  = '/' if parsed_url.path=='' else parsed_url.path
+        port = parsed_url.port
+        ssl = parsed_url.scheme == "https://"
+        path = '/' if parsed_url.path == '' else parsed_url.path
         is_up = not code in failed_codes
         if not port:
             if ssl:
                 port = 443
             else:
                 port = 80
-            
+
         now = datetime.now()
-      
+
         domain = Domain.get(host=host, port=port, ssl=ssl)
         is_crap = False
         if not domain:
@@ -209,12 +213,13 @@ class TorSpider(scrapy.Spider):
                 last_alive = now
             else:
                 last_alive = NEVER
-                title=''
-            domain=Domain(host=host, port=port, ssl=ssl, is_up=is_up, last_alive=last_alive, 
-                created_at=now, next_scheduled_check=(now + timedelta(hours=1)), visited_at=now, title=title)
+                title = ''
+            domain = Domain(host=host, port=port, ssl=ssl, is_up=is_up, last_alive=last_alive,
+                            created_at=now, next_scheduled_check=(now + timedelta(hours=1)), visited_at=now,
+                            title=title)
             self.log("created domain %s" % host)
         else:
-            domain.is_up      = is_up
+            domain.is_up = is_up
             domain.visited_at = now
             if is_up:
 
@@ -229,7 +234,8 @@ class TorSpider(scrapy.Spider):
 
         page = Page.get(url=url)
         if not page:
-            page = Page(url=url, title=title, code=code, created_at=now, visited_at=now, domain=domain, is_frontpage=is_frontpage, size=size)
+            page = Page(url=url, title=title, code=code, created_at=now, visited_at=now, domain=domain,
+                        is_frontpage=is_frontpage, size=size)
         else:
             if is_up:
                 page.title = title
@@ -238,10 +244,9 @@ class TorSpider(scrapy.Spider):
             page.size = size
             if not page.is_frontpage and is_frontpage:
                 page.is_frontpage = is_frontpage
-       
+
         return page
 
-    
     @timeout_decorator.timeout(5)
     @db_session
     def extract_other(self, page, body):
@@ -267,7 +272,6 @@ class TorSpider(scrapy.Spider):
                 bitcoin_addr = BitcoinAddress(address=addr)
             page.bitcoin_addresses.add(bitcoin_addr)
 
-
     @db_session
     def description_json(self, response):
         domain = Domain.find_by_url(response.url)
@@ -277,8 +281,6 @@ class TorSpider(scrapy.Spider):
             domain.description_json = json.loads(response.body)
         else:
             domain.description_json = None
-
-
 
     @db_session
     def useful_404_detection(self, response):
@@ -293,15 +295,15 @@ class TorSpider(scrapy.Spider):
             elif is_dir:
                 domain.useful_404_dir = True
             else:
-                domain.useful_404     = True
+                domain.useful_404 = True
         else:
             if is_php:
                 domain.useful_404_php = False
             elif is_dir:
                 domain.useful_404_dir = False
             else:
-                domain.useful_404     = False
-    
+                domain.useful_404 = False
+
         domain.useful_404_scanned_at = datetime.now()
         return None
 
@@ -314,12 +316,12 @@ class TorSpider(scrapy.Spider):
         except AttributeError:
             pass
         parsed_url = urlparse.urlparse(response.url)
-        host  = parsed_url.hostname
-        if host != "zlal32teyptf4tvi.onion":  
+        host = parsed_url.hostname
+        if host != "zlal32teyptf4tvi.onion":
             self.log('Got %s (%s)' % (response.url, title))
             is_frontpage = Page.is_frontpage_request(response.request)
             size = len(response.body)
-            
+
             page = self.update_page_info(response.url, title, response.status, is_frontpage, size)
             if not page:
                 return
@@ -334,40 +336,41 @@ class TorSpider(scrapy.Spider):
             if got_server_response and response.headers.get("Powered-By"):
                 page.domain.powered_by = tor_text.utf8_conv(response.headers.get("Powered-By"))
             domain = page.domain
-            
+
             # don't check subdomains that often
 
             penalty = 0
             rng = NORMAL_RAND_RANGE
             if domain.is_subdomain:
                 penalty = SUBDOMAIN_PENALTY
-                rng     = SUBDOMAIN_RAND_RANGE
+                rng = SUBDOMAIN_RAND_RANGE
 
             if domain.is_up:
                 domain.dead_in_a_row = 0
 
-                domain.next_scheduled_check = datetime.now() + timedelta(minutes = penalty + random.randint(60, 60 + rng)) 
+                domain.next_scheduled_check = datetime.now() + timedelta(minutes=penalty + random.randint(60, 60 + rng))
             else:
                 yield_later = None
                 # check newly dead domains immediately
                 if domain.dead_in_a_row == 0 and not recent_alive_check:
                     self.log('checking the freshly dead (%s) for movement' % domain.host)
-                    r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7,12)))
+                    r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7, 12)))
                     test_url = domain.index_url() + r
                     yield_later = scrapy.Request(test_url, callback=lambda r: self.parse(r, recent_alive_check=True))
                 if not recent_alive_check:
                     domain.dead_in_a_row += 1
                     if domain.dead_in_a_row > MAX_DEAD_IN_A_ROW:
                         domain.dead_in_a_row = MAX_DEAD_IN_A_ROW
-                    domain.next_scheduled_check = (datetime.now() + 
-                        timedelta(minutes = penalty + random.randint(60, 60 + rng) * (PENALTY_BASE ** domain.dead_in_a_row)))
+                    domain.next_scheduled_check = (datetime.now() +
+                                                   timedelta(minutes=penalty + random.randint(60, 60 + rng) * (
+                                                               PENALTY_BASE ** domain.dead_in_a_row)))
 
                 commit()
                 if yield_later:
                     yield yield_later
 
             is_text = False
-            content_type = response.headers.get("Content-Type") 
+            content_type = response.headers.get("Content-Type")
             if got_server_response and content_type and re.match('^text/', content_type.strip()):
                 is_text = True
 
@@ -382,7 +385,7 @@ class TorSpider(scrapy.Spider):
 
             # add some randomness to the check
 
-            path_event_horizon = datetime.now() - timedelta(days=14+random.randint(0, 14))
+            path_event_horizon = datetime.now() - timedelta(days=14 + random.randint(0, 14))
 
             # interesting paths
 
@@ -408,25 +411,24 @@ class TorSpider(scrapy.Spider):
             # 404 detections
 
             if domain.is_up and is_frontpage and domain.useful_404_scanned_at < (datetime.now() - timedelta(weeks=2)):
-                
                 # standard
 
-                r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7,12)))
+                r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7, 12)))
                 url = domain.index_url() + r
                 yield scrapy.Request(url, callback=self.useful_404_detection)
 
                 # php
 
-                r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7,12)))
-                url = domain.index_url() + r +".php"
+                r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7, 12)))
+                url = domain.index_url() + r + ".php"
                 yield scrapy.Request(url, callback=self.useful_404_detection)
-               
+
                 # dir
 
-                r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7,12)))
-                url = domain.index_url() + r +"/"
+                r = ''.join(random.choice(string.ascii_lowercase) for _ in range(random.randint(7, 12)))
+                url = domain.index_url() + r + "/"
                 yield scrapy.Request(url, callback=self.useful_404_detection)
-            
+
             link_to_list = []
             self.log("Finding links...")
 
@@ -444,9 +446,9 @@ class TorSpider(scrapy.Spider):
                             link_to_list.append(fullurl)
 
                 self.log("link_to_list %s" % link_to_list)
-                    
+
                 if page.got_server_response():
-                    small_body = response.body[:(1024*MAX_PARSE_SIZE_KB)]
+                    small_body = response.body[:(1024 * MAX_PARSE_SIZE_KB)]
                     page.links_to.clear()
                     for url in link_to_list:
                         link_to = Page.find_stub_by_url(url)
@@ -457,9 +459,7 @@ class TorSpider(scrapy.Spider):
                     except timeout_decorator.TimeoutError:
                         pass
 
-                    commit()                        
-
+                    commit()
 
     def process_exception(self, response, exception, spider):
         self.update_page_info(response.url, None, 666);
-

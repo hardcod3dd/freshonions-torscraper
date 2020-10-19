@@ -8,14 +8,17 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 8SLK3Bny
       MYSQL_DATABASE: tor
+    user: ${CURRENT_UID}
     volumes:
       - .:/docker-entrypoint-initdb.d/
-    user: ${CURRENT_UID}
-
+      - my-datavolume:/var/lib/mysql
   memcached:
-    image: memcached
-    restart: on-failure
-    user: ${CURRENT_UID}
+   image: memcached
+   ports:
+     - "11211:11211"
+   entrypoint:
+    - memcached
+    - -m 64
 
   proxy:
     image: dperson/torproxy
@@ -61,3 +64,7 @@ services:
     ports:
       - 5000:5000
     user: ${CURRENT_UID}
+
+volumes:
+    my-datavolume:
+

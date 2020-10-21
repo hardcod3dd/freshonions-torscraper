@@ -13,6 +13,6 @@ def get_domains():
 		hostlist.append(domain.host)
 	return list(set(hostlist))
 
-hostlist = get_domains()
-p=portscanner.PortScanner(hostlist)
+
+p = portscanner.PortScanner(get_domains())
 sys.exit(0)

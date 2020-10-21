@@ -45,6 +45,8 @@ PORTS = { 8333  : "bitcoin",
           6969  : "double the fun",
           1234  : "patterns rule",
           12345 : "patterns rule",
+          3306  : "MySQL",
+          5432  : "PostgreSQL",
         }
 
 def pop_or_none(l):

@@ -197,7 +197,7 @@ class TorSpider(scrapy.Spider):
         port = parsed_url.port
         ssl = parsed_url.scheme == "https://"
         path = '/' if parsed_url.path == '' else parsed_url.path
-        is_up = not code in failed_codes
+        is_up = code not in failed_codes
         if not port:
             if ssl:
                 port = 443

@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.5'
 
 services:
   db:
@@ -45,6 +45,12 @@ services:
     image: fresh/scrapper
     restart: on-failure
     user: ${CURRENT_UID}
+    deploy:
+      resources:
+        limits:
+          memory: 2gb
+        reservations:
+          memory: 500m
 
   isup:
     depends_on:
@@ -54,6 +60,12 @@ services:
     image: fresh/isup
     restart: on-failure
     user: ${CURRENT_UID}
+    deploy:
+      resources:
+        limits:
+          memory: 1gb
+        reservations:
+          memory: 500m
 
   frontend:
     depends_on:

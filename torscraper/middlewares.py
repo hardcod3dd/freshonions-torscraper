@@ -26,7 +26,6 @@ class FilterTooManySubdomainsMiddleware(object):
         o = cls()
         return o
 
-
     @db_session
     def process_request(self, request, spider):
 
@@ -36,11 +35,10 @@ class FilterTooManySubdomainsMiddleware(object):
         host = parsed_url.hostname
         subdomains = host.count(".")
         if subdomains > 2:
-            raise IgnoreRequest('Too many subdomains (%d > 2)' % subdomains)
+            raise IgnoreRequest("Too many subdomains (%d > 2)" % subdomains)
 
         return None
 
-       
 
 class FilterDeadDomainMiddleware(object):
     def __init__(self):
@@ -54,14 +52,13 @@ class FilterDeadDomainMiddleware(object):
         o = cls()
         return o
 
-
     @db_session
     def process_request(self, request, spider):
 
-          # don't use this middleware while testing is site is up
-        if hasattr(spider, "test") and spider.test=="yes":
-            #logger = logging.getLogger()
-            #logger.info("Testing mode, dead domains disabled")
+        # don't use this middleware while testing is site is up
+        if hasattr(spider, "test") and spider.test == "yes":
+            # logger = logging.getLogger()
+            # logger.info("Testing mode, dead domains disabled")
             return None
 
         if not Domain.is_onion_url(request.url):
@@ -71,14 +68,16 @@ class FilterDeadDomainMiddleware(object):
         if not domain or domain.is_up:
             return None
 
-        raise IgnoreRequest('Domain %s is dead, skipping' % domain.host)
+        raise IgnoreRequest("Domain %s is dead, skipping" % domain.host)
 
 
-class FilterNotScheduledMiddleware():
+class FilterNotScheduledMiddleware:
     def __init__(self, test_mode):
         self.test_mode = test_mode
         logger = logging.getLogger()
-        logger.info("FilterNotScheduledMiddleware loaded, test_mode %s" % str(test_mode))
+        logger.info(
+            "FilterNotScheduledMiddleware loaded, test_mode %s" % str(test_mode)
+        )
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -89,9 +88,9 @@ class FilterNotScheduledMiddleware():
         return o
 
     @db_session
-    def process_request(self, request, spider): 
+    def process_request(self, request, spider):
         parsed_url = urlparse.urlparse(request.url)
-        
+
         if not self.test_mode or not parsed_url.path in ["/", ""]:
             return None
 
@@ -108,13 +107,18 @@ class FilterNotScheduledMiddleware():
         if now > d.next_scheduled_check:
             return None
         else:
-            raise IgnoreRequest('FilterNotScheduledMiddleware: %s is not scheduled to check' % d.host)
+            raise IgnoreRequest(
+                "FilterNotScheduledMiddleware: %s is not scheduled to check" % d.host
+            )
 
 
 class FilterDomainByPageLimitMiddleware(object):
     def __init__(self, max_pages):
         logger = logging.getLogger()
-        logger.info("FilterDomainbyPageLimitMiddleware loaded with MAX_PAGES_PER_DOMAIN = %d", max_pages)
+        logger.info(
+            "FilterDomainbyPageLimitMiddleware loaded with MAX_PAGES_PER_DOMAIN = %d",
+            max_pages,
+        )
         self.max_pages = max_pages
         self.counter = defaultdict(int)
 
@@ -122,25 +126,31 @@ class FilterDomainByPageLimitMiddleware(object):
     def from_crawler(cls, crawler):
         settings = crawler.settings
         spider_name = crawler.spider.name
-        max_pages = settings.get('MAX_PAGES_PER_DOMAIN')
+        max_pages = settings.get("MAX_PAGES_PER_DOMAIN")
         o = cls(max_pages)
         return o
 
     def process_request(self, request, spider):
-        
+
         parsed_url = urlparse.urlparse(request.url)
         host = parsed_url.hostname
         if self.counter[host] < self.max_pages:
             self.counter[host] += 1
-            spider.logger.info('Page count is %d for %s' % (self.counter[host], host))
-            return None                   
+            spider.logger.info("Page count is %d for %s" % (self.counter[host], host))
+            return None
         else:
-            raise IgnoreRequest('MAX_PAGES_PER_DOMAIN reached, filtered %s' % request.url)
+            raise IgnoreRequest(
+                "MAX_PAGES_PER_DOMAIN reached, filtered %s" % request.url
+            )
+
 
 class AllowBigDownloadMiddleware(object):
     def __init__(self, big_download_size, allow_list):
         logger = logging.getLogger()
-        logger.info("AllowBigDownloadMiddleware loaded with BIG_DOWNLOAD_MAXSIZE = %d", big_download_size)
+        logger.info(
+            "AllowBigDownloadMiddleware loaded with BIG_DOWNLOAD_MAXSIZE = %d",
+            big_download_size,
+        )
         self.big_download_size = big_download_size
         self.allow_list = allow_list
 
@@ -148,13 +158,13 @@ class AllowBigDownloadMiddleware(object):
     def from_crawler(cls, crawler):
         settings = crawler.settings
         spider_name = crawler.spider.name
-        big_download_size = settings.get('BIG_DOWNLOAD_MAXSIZE')
-        allow_list = settings.get('ALLOW_BIG_DOWNLOAD')
+        big_download_size = settings.get("BIG_DOWNLOAD_MAXSIZE")
+        allow_list = settings.get("ALLOW_BIG_DOWNLOAD")
         o = cls(big_download_size, allow_list)
         return o
 
     def process_request(self, request, spider):
-        
+
         parsed_url = urlparse.urlparse(request.url)
         host = parsed_url.hostname
         if host in self.allow_list:
@@ -162,22 +172,25 @@ class AllowBigDownloadMiddleware(object):
             logger = logging.getLogger()
             logger.info("Big download allowed for %s", host)
         return None
-            
+
 
 class InjectRangeHeaderMiddleware(object):
-
     @classmethod
     def from_crawler(cls, crawler):
-        if not crawler.settings.getbool('INJECT_RANGE_HEADER'):
+        if not crawler.settings.getbool("INJECT_RANGE_HEADER"):
             raise NotConfigured
         settings = crawler.settings
-        big_download_maxsize = settings.get('BIG_DOWNLOAD_MAXSIZE', 0)
-        allow_list = settings.get('ALLOW_BIG_DOWNLOAD', [])
-        download_maxsize = settings.get('DOWNLOAD_MAXSIZE')
+        big_download_maxsize = settings.get("BIG_DOWNLOAD_MAXSIZE", 0)
+        allow_list = settings.get("ALLOW_BIG_DOWNLOAD", [])
+        download_maxsize = settings.get("DOWNLOAD_MAXSIZE")
         return cls(download_maxsize, allow_list, big_download_maxsize)
 
     def __init__(self, download_maxsize, allow_list=[], big_download_maxsize=0):
-        self.big_download_maxsize = download_maxsize if big_download_maxsize < download_maxsize else big_download_maxsize
+        self.big_download_maxsize = (
+            download_maxsize
+            if big_download_maxsize < download_maxsize
+            else big_download_maxsize
+        )
         self.download_maxsize = download_maxsize
         self.allow_list = allow_list
 
@@ -186,10 +199,16 @@ class InjectRangeHeaderMiddleware(object):
             if isinstance(r, Request):
                 parsed_url = urlparse.urlparse(r.url)
                 host = parsed_url.hostname
-                max_size = self.big_download_maxsize if host in self.allow_list else self.download_maxsize
-                r.headers.setdefault('Range', "bytes=0-%d" % (max_size-1))
+                max_size = (
+                    self.big_download_maxsize
+                    if host in self.allow_list
+                    else self.download_maxsize
+                )
+                r.headers.setdefault("Range", "bytes=0-%d" % (max_size - 1))
             return r
+
         return (_set_range(r) for r in result or ())
+
 
 class TorscraperSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -236,4 +255,4 @@ class TorscraperSpiderMiddleware(object):
             yield r
 
     def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        spider.logger.info("Spider opened: %s" % spider.name)

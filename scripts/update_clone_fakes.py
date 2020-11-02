@@ -2,7 +2,7 @@
 from pony.orm import *
 from datetime import *
 from tor_db import *
-import sys 
+import sys
 
 
 CloneGroup.update_fakes()

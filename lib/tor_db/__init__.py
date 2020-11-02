@@ -1,4 +1,4 @@
-import urlparse 
+import urlparse
 import re
 import os
 from pony.orm import *

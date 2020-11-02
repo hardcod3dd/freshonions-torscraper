@@ -23,7 +23,7 @@ def is_php(path):
 
 def construct_urls(domain):
     first_part = domain.index_url()[:-1]
-    return map(lambda p: first_part + p, PATHS)
+    return [first_part + p for p in PATHS]
 
 
 for p in PATHS:

@@ -3,9 +3,7 @@
 from langdetect import detect_langs
 from tor_db import *
 import sys
-
-reload(sys)
-sys.setdefaultencoding("utf-8")
+import importlib
 import pycountry
 import logging
 

@@ -6,7 +6,7 @@ import tor_db.models.domain
 import elasticsearch.exceptions
 from tor_elasticsearch import *
 from datetime import *
-import urlparse
+import urllib.parse
 
 
 class Page(db.Entity):
@@ -57,7 +57,7 @@ class Page(db.Entity):
     @classmethod
     @db_session
     def delete_old(klass):
-        print "find old"
+        print("find old")
         i = 1
         pages = Page.find_old()
         while len(pages) > 0:
@@ -67,7 +67,7 @@ class Page(db.Entity):
                 page.delete()
 
                 if (i % 50) == 0:
-                    print i
+                    print(i)
                 i += 1
 
             commit()
@@ -75,7 +75,7 @@ class Page(db.Entity):
 
     @classmethod
     def is_frontpage_url(klass, url):
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(url)
         path = "/" if parsed_url.path == "" else parsed_url.path
         if path == "/":
             return True
@@ -84,7 +84,7 @@ class Page(db.Entity):
 
     @classmethod
     def path_from_url(klass, url):
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(url)
         path = "/" if parsed_url.path == "" else parsed_url.path
         return path
 

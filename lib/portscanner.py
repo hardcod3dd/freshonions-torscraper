@@ -1,14 +1,12 @@
 import random
 from datetime import *
+
+from tor_db import *
+from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.protocol import Protocol, ClientFactory
-from twisted.internet.task import react
-
-from txsocksx.client import SOCKS5ClientEndpoint
-from tor_db import *
-
-from twisted.internet import reactor
+import socks
 
 TOR_HOST = os.environ["HIDDEN_SERVICE_PROXY_HOST"]
 TOR_PORT = int(os.environ["HIDDEN_SERVICE_PROXY_PORT"])
@@ -113,7 +111,7 @@ class Connection:
             self.connect()
             return self.current_port
         else:
-            print("%s is finished" % self.active_host.hostname)
+            print(("%s is finished" % self.active_host.hostname))
             host = self.scanner.attach_to_next()
             if host is None:
                 self.scanner.conn_finished(self)
@@ -128,10 +126,10 @@ class Connection:
 
     def connect(self):
         torEndpoint = TCP4ClientEndpoint(reactor, TOR_HOST, TOR_PORT)
-        proxiedEndpoint = SOCKS5ClientEndpoint(
-            self.active_host.hostname.encode("ascii"), self.current_port, torEndpoint
-        )
-        d = proxiedEndpoint.connect(PortScannerClientFactory(self))
+        #proxiedEndpoint = (
+        #    self.active_host.hostname.encode("ascii"), self.current_port, torEndpoint
+        #)
+        #d = proxiedEndpoint.connect(PortScannerClientFactory(self))
         d.addCallback(gotProtocol, self)
         d.addErrback(gotErr, self)
         # reactor.callLater(60, d.cancel)
@@ -151,7 +149,7 @@ class ActiveHost:
 
     @db_session
     def add_open_port(self, port):
-        print("Found open port %s:%d" % (self.hostname, port))
+        print(("Found open port %s:%d" % (self.hostname, port)))
         domain = Domain.find_by_host(self.hostname)
         domain.open_ports.create(port=port)
 

@@ -5,7 +5,7 @@ from flask import jsonify
 from flask import url_for
 from flask import redirect
 from flask import send_from_directory
-import urlparse
+import urllib.parse
 import dateutil.parser
 from pony.orm import *
 from datetime import *
@@ -18,7 +18,7 @@ import bitcoin
 import email_util
 import banned
 import tor_text
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
 @db_session
@@ -34,7 +34,7 @@ def render_elasticsearch(context, json=False):
     domain_set_dict = dict()
     for hit in results.hits:
         domain_set_dict[hit.domain_id] = True
-    domain_set = domain_set_dict.keys()
+    domain_set = list(domain_set_dict.keys())
     domain_precache = select(d for d in Domain if d.id in domain_set)
     if json:
         return (json_elastic_search_results(results, context, orig_count), orig_count)
@@ -91,7 +91,7 @@ def maybe_domain_search(context, json=False):
 def maybe_search_redirect(search):
     search = search.strip()
     if Domain.is_onion_url(search):
-        parsedurl = urlparse.urlparse(search)
+        parsedurl = urllib.parse.urlparse(search)
         search = parsedurl.hostname
     if search != "":
         if re.match(".*\.onion$", search):
@@ -245,7 +245,7 @@ def next_index_page_url(context, n_results):
             continue
         if not first:
             url = url + "&"
-        url = url + ("%s=%s" % (k, urllib.quote(v)))
+        url = url + ("%s=%s" % (k, urllib.parse.quote(v)))
         first = False
     return url
 
@@ -256,16 +256,18 @@ def json_domain_search_results(results, context, n_results):
     json_obj["total_results"] = n_results
     json_obj["next_page"] = next_index_page_url(context, n_results)
     json_obj["query"] = context
-    json_obj["results"] = map(
-        lambda d: {
-            "domain": d.to_dict(),
-            "url": d.index_url(),
-            "title": d.title,
-            "fragment": None,
-            "created_at": d.created_at,
-            "visited_at": d.visited_at,
-        },
-        list(results),
+    json_obj["results"] = list(
+        map(
+            lambda d: {
+                "domain": d.to_dict(),
+                "url": d.index_url(),
+                "title": d.title,
+                "fragment": None,
+                "created_at": d.created_at,
+                "visited_at": d.visited_at,
+            },
+            list(results),
+        )
     )
     return jsonify(json_obj)
 

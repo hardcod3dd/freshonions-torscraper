@@ -15,7 +15,7 @@ import interesting_paths
 import os
 import re
 import dateutil.parser
-import urlparse
+import urllib.parse
 import random
 
 
@@ -153,7 +153,7 @@ class Domain(db.Entity):
 
     @db_session
     def get_open_ports(self):
-        op = map(lambda p: p.port, list(self.open_ports))
+        op = [p.port for p in list(self.open_ports)]
         web_ports = select(
             d.port for d in Domain if d.host == self.host and d.is_up == True
         )
@@ -297,11 +297,11 @@ class Domain(db.Entity):
             d["links_to"] = []
             d["links_from"] = []
             d["emails"] = []
-            d["interesting_paths"] = map(
-                lambda p: self.construct_url(p), self.interesting_paths()
-            )
+            d["interesting_paths"] = [
+                self.construct_url(p) for p in self.interesting_paths()
+            ]
             d["bitcoin_addresses"] = []
-            d["clones"] = map(lambda d: d.index_url(), our_clones)
+            d["clones"] = [d.index_url() for d in our_clones]
             d["open_ports"] = self.get_open_ports()
 
             whatweb_plugins = {}
@@ -338,7 +338,7 @@ class Domain(db.Entity):
 
     @classmethod
     def time_ago(klass, time):
-        if isinstance(time, basestring):
+        if isinstance(time, str):
             time = dateutil.parser.parse(time)
         if time == NEVER:
             return "Never"
@@ -494,7 +494,7 @@ class Domain(db.Entity):
     @db_session
     def find_by_url(klass, url):
         try:
-            parsed_url = urlparse.urlparse(url)
+            parsed_url = urllib.parse.urlparse(url)
             host = parsed_url.hostname
             port = parsed_url.port
             ssl = parsed_url.scheme == "https://"
@@ -509,7 +509,7 @@ class Domain(db.Entity):
 
     @classmethod
     def find_stub_by_url(klass, url):
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(url)
         host = parsed_url.hostname
         port = parsed_url.port
         ssl = parsed_url.scheme == "https://"
@@ -526,7 +526,7 @@ class Domain(db.Entity):
         if not re.match(r"http[s]?://", url):
             return False
         try:
-            parsed_url = urlparse.urlparse(url)
+            parsed_url = urllib.parse.urlparse(url)
             host = parsed_url.hostname
             if re.match("[a-zA-Z0-9.]+\.onion$", host):
                 return True

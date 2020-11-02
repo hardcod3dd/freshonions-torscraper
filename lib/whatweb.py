@@ -55,7 +55,7 @@ def process(dom):
     dom.web_components.clear()
     if whatweb_data is None:
         return None
-    for plugin, data in whatweb_data["plugins"].iteritems():
+    for plugin, data in whatweb_data["plugins"].items():
         name = plugin.lower()
         if name in IGNORE_PLUGINS:
             continue
@@ -83,6 +83,6 @@ def process_all():
         i = i + 1
         dom = Domain.get(id=did)
         if (i % 50) == 0:
-            print("Processing %d / %d" % (i, total))
+            print(("Processing %d / %d" % (i, total)))
         process(dom)
         commit()

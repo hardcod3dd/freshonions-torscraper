@@ -18,4 +18,4 @@ def strip_html(text):
 
 
 def utf8_conv(s):
-    return unicode(s, "utf-8", "replace")
+    return str(s, "utf-8", "replace")

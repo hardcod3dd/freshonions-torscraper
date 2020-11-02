@@ -84,7 +84,7 @@ def get_html():
     i = 1
     for did in domain_ids:
         if (i % 10) == 0:
-            print("%d / %d" % (i, n))
+            print(("%d / %d" % (i, n)))
         i += 1
         body, url = get_domain_body_and_url(did)
         if not body:
@@ -111,14 +111,14 @@ def detect():
         comparisons = matrix[i]
         url_a = domain_index[i]
         if ((i + 1) % 10) == 0:
-            print("processed %d / %d" % (i + 1, total))
+            print(("processed %d / %d" % (i + 1, total)))
         if has_clone_group(url_a):
             continue
         for j in range(i + 1, len(frontpage_index)):
             score = comparisons[j]
             if score > CLONE_THRESHOLD:
                 url_b = domain_index[j]
-                print("Clone detected (score %f) #1 %s #2 %s" % (score, url_a, url_b))
+                print(("Clone detected (score %f) #1 %s #2 %s" % (score, url_a, url_b)))
                 set_clone_group(url_a, url_b)
 
     update_clone_group()

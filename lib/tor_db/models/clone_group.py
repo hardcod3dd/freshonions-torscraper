@@ -29,7 +29,7 @@ class CloneGroup(db.Entity):
             for domain in group.domains:
                 if not (domain.manual_genuine or domain.is_genuine or domain.is_fake):
                     domain.is_fake = True
-                    print("Setting %s to fake" % domain.host)
+                    print(("Setting %s to fake" % domain.host))
             commit()
 
     @classmethod
@@ -42,4 +42,4 @@ class CloneGroup(db.Entity):
             i += 1
             group.delete()
             if i % 10:
-                print("deleted %d / %d" % (i, n))
+                print(("deleted %d / %d" % (i, n)))

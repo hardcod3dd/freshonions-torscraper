@@ -269,7 +269,7 @@ def onion_info(onion):
             language = detect_language.code_to_lang(domain.language)
         except Exception as e:
             logging.error(e)
-            language = "guess " + domain.language
+            language = domain.language
             pass
         if domain.ssh_fingerprint:
             fp_count = len(domain.ssh_fingerprint.domains)

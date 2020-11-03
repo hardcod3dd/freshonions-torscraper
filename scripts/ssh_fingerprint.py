@@ -29,7 +29,7 @@ mySocket.close()
 
 
 printableType = sshKey.get_name()
-printableKey = base64.encodestring(sshKey.__str__()).replace("\n", "")
+printableKey = base64.encodebytes(sshKey.__str__()).replace("\n", "")
 sshFingerprint = hashlib.md5(sshKey.__str__()).hexdigest()
 printableFingerprint = ":".join(
     a + b for a, b in zip(sshFingerprint[::2], sshFingerprint[1::2])

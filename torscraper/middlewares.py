@@ -7,7 +7,7 @@
 
 from scrapy import signals
 import logging
-import urlparse
+import urllib.parse
 import datetime
 from tor_db import *
 from collections import defaultdict
@@ -31,7 +31,7 @@ class FilterTooManySubdomainsMiddleware(object):
 
         if not Domain.is_onion_url(request.url):
             return None
-        parsed_url = urlparse.urlparse(request.url)
+        parsed_url = urllib.parse.urlparse(request.url)
         host = parsed_url.hostname
         subdomains = host.count(".")
         if subdomains > 2:
@@ -89,7 +89,7 @@ class FilterNotScheduledMiddleware:
 
     @db_session
     def process_request(self, request, spider):
-        parsed_url = urlparse.urlparse(request.url)
+        parsed_url = urllib.parse.urlparse(request.url)
 
         if not self.test_mode or not parsed_url.path in ["/", ""]:
             return None
@@ -132,7 +132,7 @@ class FilterDomainByPageLimitMiddleware(object):
 
     def process_request(self, request, spider):
 
-        parsed_url = urlparse.urlparse(request.url)
+        parsed_url = urllib.parse.urlparse(request.url)
         host = parsed_url.hostname
         if self.counter[host] < self.max_pages:
             self.counter[host] += 1
@@ -165,7 +165,7 @@ class AllowBigDownloadMiddleware(object):
 
     def process_request(self, request, spider):
 
-        parsed_url = urlparse.urlparse(request.url)
+        parsed_url = urllib.parse.urlparse(request.url)
         host = parsed_url.hostname
         if host in self.allow_list:
             request.meta["download_maxsize"] = self.big_download_size
@@ -197,7 +197,7 @@ class InjectRangeHeaderMiddleware(object):
     def process_spider_output(self, response, result, spider):
         def _set_range(r):
             if isinstance(r, Request):
-                parsed_url = urlparse.urlparse(r.url)
+                parsed_url = urllib.parse.urlparse(r.url)
                 host = parsed_url.hostname
                 max_size = (
                     self.big_download_maxsize

@@ -1,29 +1,25 @@
-import scrapy
-import urlparse
-import re
-from collections import *
-from pony.orm import *
-from datetime import *
-from tor_db import *
-from tor_elasticsearch import *
 import json
 import random
-import tor_text
+import re
 import string
-import random
-import timeout_decorator
+import urllib.parse
+from datetime import *
+
 import bitcoin
 import email_util
 import interesting_paths
+import scrapy
+import timeout_decorator
 import tor_text
+from pony.orm import *
+from tor_db import *
+from tor_elasticsearch import *
 
 SUBDOMAIN_PENALTY = 6 * 60
 NORMAL_RAND_RANGE = 2 * 60
 SUBDOMAIN_RAND_RANGE = 6 * 60
 MAX_DEAD_IN_A_ROW = 17
 PENALTY_BASE = 1.5
-
-from scrapy.exceptions import IgnoreRequest
 
 
 def maybe_add_scheme(onion):
@@ -76,9 +72,9 @@ def domain_urls_recent_no_crap():
     urls = []
     now = datetime.now()
     event_horizon = now - timedelta(days=30)
-    n_items = count(d for d in Domain if d.is_up == True and d.is_crap == False)
+    n_items = count(d for d in Domain if d.is_up is True and d.is_crap is False)
     for domain in Domain.select(
-        lambda d: d.is_up == True and d.is_crap == False
+        lambda d: d.is_up is True and d.is_crap is False
     ).random(n_items):
         urls.append(domain.index_url())
     return urls
@@ -200,7 +196,7 @@ class TorSpider(scrapy.Spider):
 
         if not title:
             title = ""
-        parsed_url = urlparse.urlparse(url)
+        parsed_url = urllib.parse.urlparse(url)
         host = parsed_url.hostname
         if host == "zlal32teyptf4tvi.onion":
             return False
@@ -280,7 +276,7 @@ class TorSpider(scrapy.Spider):
         self.log("extract_other")
         page.emails.clear()
         self.log("find_emails")
-        for addr in re.findall(email_util.REGEX, body):
+        for addr in re.findall(email_util.REGEX, str(body)):
             addr = addr.lower()
             self.log("found email %s" % addr)
             email = Email.get(address=addr)
@@ -290,7 +286,7 @@ class TorSpider(scrapy.Spider):
 
         page.bitcoin_addresses.clear()
         self.log("find_bitcoin")
-        for addr in re.findall(bitcoin.REGEX, body):
+        for addr in re.findall(bitcoin.REGEX, str(body)):
             self.log("testing address %s" % addr)
             if not bitcoin.is_valid(addr):
                 continue
@@ -342,7 +338,7 @@ class TorSpider(scrapy.Spider):
             title = response.css("title::text").extract_first()
         except AttributeError:
             pass
-        parsed_url = urlparse.urlparse(response.url)
+        parsed_url = urllib.parse.urlparse(response.url)
         host = parsed_url.hostname
         if host != "zlal32teyptf4tvi.onion":
             self.log("Got %s (%s)" % (response.url, title))
@@ -415,7 +411,7 @@ class TorSpider(scrapy.Spider):
                     yield yield_later
 
             is_text = False
-            content_type = response.headers.get("Content-Type")
+            content_type = str(response.headers.get("Content-Type"))
             if (
                 got_server_response
                 and content_type
@@ -463,7 +459,7 @@ class TorSpider(scrapy.Spider):
                 and is_frontpage
                 and (response.status == 200 or response.status == 206)
             ):
-                domain.detect_language(tor_text.strip_html(response.body))
+                domain.detect_language(tor_text.strip_html(str(response.body)))
                 commit()
 
             # 404 detections
@@ -511,7 +507,7 @@ class TorSpider(scrapy.Spider):
                     yield scrapy.Request(fullurl, callback=self.parse)
                     if got_server_response and Domain.is_onion_url(fullurl):
                         try:
-                            parsed_link = urlparse.urlparse(fullurl)
+                            parsed_link = urllib.parse.urlparse(fullurl)
                         except:
                             continue
                         link_host = parsed_link.hostname

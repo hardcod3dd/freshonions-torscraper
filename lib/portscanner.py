@@ -8,8 +8,8 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet.protocol import Protocol, ClientFactory
 import socks
 
-TOR_HOST = os.environ["HIDDEN_SERVICE_PROXY_HOST"]
-TOR_PORT = int(os.environ["HIDDEN_SERVICE_PROXY_PORT"])
+TOR_PROXY_HOST = os.environ["TOR_PROXY_HOST"]
+TOR_PROXY_PORT = int(os.environ["TOR_PROXY_PORT"])
 MAX_TOTAL_CONNECTIONS = 16
 MAX_CONNECTIONS_PER_HOST = 1
 
@@ -91,14 +91,6 @@ class PortScannerClientFactory(ClientFactory):
         print("connection failed")
 
 
-def gotProtocol(p, conn):
-    conn.active_host.add_open_port(conn.current_port)
-
-
-def gotErr(failure, conn):
-    conn.next_port()
-
-
 class Connection:
     def __init__(self, scanner):
         self.scanner = scanner
@@ -125,15 +117,14 @@ class Connection:
         return self.next_port()
 
     def connect(self):
-        torEndpoint = TCP4ClientEndpoint(reactor, TOR_HOST, TOR_PORT)
-        #proxiedEndpoint = (
-        #    self.active_host.hostname.encode("ascii"), self.current_port, torEndpoint
-        #)
-        #d = proxiedEndpoint.connect(PortScannerClientFactory(self))
-        d.addCallback(gotProtocol, self)
-        d.addErrback(gotErr, self)
-        # reactor.callLater(60, d.cancel)
-
+        s = socks.socksocket()
+        s.set_proxy(socks.SOCKS4, TOR_PROXY_HOST, TOR_PROXY_PORT)
+        for port in :
+            try:
+                s.connect((self.active_host.hostname, self.current_port))
+            except Exception as e:
+                print("Failed to scan {} -- {}".format(self.active_host, e))
+            self.active_host.add_open_port(self.current_port)
 
 class ActiveHost:
     @db_session

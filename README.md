@@ -1,6 +1,6 @@
 # Fresh Onions TOR Hidden Service Crawler
 
-This is a copy of the source for the http://zlal32teyptf4tvi.onion hidden service, which implements a tor hidden service crawler / spider and web site.
+This is a fork of the source for the http://zlal32teyptf4tvi.onion hidden service, which implements a tor hidden service crawler / spider and web site.
 
 ## Features
 
@@ -17,6 +17,8 @@ This is a copy of the source for the http://zlal32teyptf4tvi.onion hidden servic
 * Search for "interesting" URL paths, useful 404 detection
 * Automatic language detection
 * Fuzzy clone detection (requires elasticsearch, more advanced than superlist clone detection)
+* Docker containers to allow single node deployment
+* Upgrade to Python3
 
 ## Licence
 
@@ -75,7 +77,7 @@ if elasticsearch is disabled there will be no fulltext search, however crawling 
     
     # portscan new onions               
     1 */6 * * * /home/scraper/torscraper/scripts/portscan_up.sh
-
+    
     # scrape stronghold paste
     32 */2 * * * /home/scraper/torscraper/scripts/stronghold_paste_rip.sh
     

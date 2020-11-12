@@ -1,7 +1,7 @@
 #!make
 
 default: help
-all: frontend scrapper isup proxy compose-start
+all: frontend scrapper isup compose-start
 
 frontend: ## Build the wsgi frontend
 	@docker build -f frontend.dockerfile . -t fresh/frontend

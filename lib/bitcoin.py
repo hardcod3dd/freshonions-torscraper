@@ -2,8 +2,8 @@ from Crypto.Hash import SHA256
 import re
 import math
 
-REGEX = re.compile("\b[13][a-zA-Z1-9]{26,34}\b")
-REGEX_ALL = re.compile("^[13][a-zA-Z1-9]{26,34}$")
+REGEX = re.compile("\b[13][a-zA-Z1-9]{26,34}\b", re.MULTILINE)
+REGEX_ALL = re.compile("^[13][a-zA-Z1-9]{26,34}$", re.MULTILINE)
 
 __b58chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 __b58base = len(__b58chars)

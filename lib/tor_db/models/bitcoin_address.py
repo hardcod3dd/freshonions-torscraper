@@ -18,3 +18,13 @@ class BitcoinAddress(db.Entity):
             for b in p.bitcoin_addresses
             if b == self
         )
+
+    @db_session
+    def get_all():
+        return select(
+            d
+            for d in tor_db.models.domain.Domain
+            for p in d.pages
+            for b in p.bitcoin_addresses
+            if b is not None
+        )

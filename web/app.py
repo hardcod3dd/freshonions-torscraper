@@ -530,7 +530,7 @@ def port_list(ports):
             "port_list.html", domains=domains, ports=ports, port_list_str=port_list_str
         )
     else:
-        return render_template("error.html", code=404, message="Email not found."), 404
+        return render_template("error.html", code=404, message="no open ports found."), 404
 
 
 @app.route("/port/<ports>/json")
@@ -553,7 +553,7 @@ def port_list_json(ports):
     if len(domains) > 0:
         return jsonify(Domain.to_dict_list(domains))
     else:
-        return render_template("error.html", code=404, message="Email not found."), 404
+        return render_template("error.html", code=404, message="No open ports found."), 404
 
 
 @app.route("/bitcoin/<addr>")
@@ -565,8 +565,19 @@ def bitcoin_list(addr):
         domains = Domain.hide_banned(btc_addr.domains())
         return render_template("bitcoin_list.html", domains=domains, addr=addr)
     else:
-        return render_template("error.html", code=404, message="Email not found."), 404
+        return render_template("error.html", code=404, message="No bitcoin found."), 404
 
+
+@app.route("/bitcoins")
+@cached(timeout=HOUR_SEC)
+@db_session
+def bitcoins_list():
+    btc_addr = BitcoinAddress.get_all()
+    if btc_addr:
+        domains = Domain.hide_banned(btc_addr.domains())
+        return render_template("bitcoin_list.html", domains=domains, addr=addr)
+    else:
+        return render_template("error.html", code=404, message="Bitcoin not found."), 404
 
 @app.route("/bitcoin/<addr>/json")
 @cached(timeout=HOUR_SEC, render_layout=False)
@@ -577,7 +588,7 @@ def bitcoin_list_json(addr):
         domains = Domain.hide_banned(btc_addr.domains())
         return jsonify(Domain.to_dict_list(domains))
     else:
-        return render_template("error.html", code=404, message="Email not found."), 404
+        return render_template("error.html", code=404, message="Bitcoin not found."), 404
 
 
 @app.route("/favicon.ico")

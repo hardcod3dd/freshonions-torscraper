@@ -1,4 +1,4 @@
-FROM python:3.10.0b4
+FROM python:3.10-slim
 EXPOSE 8080
 WORKDIR /home/freshonions
 ADD . /home/freshonions

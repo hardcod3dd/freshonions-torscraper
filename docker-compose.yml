@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   db:
-    image: mysql
+    image: mariadb:10.5.8
     restart: always
     command: --default-authentication-plugin=mysql_native_password
     environment:
@@ -31,7 +31,7 @@ services:
   adminer:
     depends_on:
       - db
-    image: adminer
+    image: arm64v8/adminer
     restart: always
     ports:
       - 8080:8080

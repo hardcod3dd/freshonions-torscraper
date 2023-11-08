@@ -11,6 +11,7 @@ import portscanner
 import tor_text
 import version
 from flask import Flask
+from flask_caching import Cache
 from flask import g
 from flask import jsonify
 from flask import redirect
@@ -24,7 +25,14 @@ from tor_cache import *
 from tor_db import *
 from tor_elasticsearch import *
 
+config = {
+    "DEBUG": True,  # some Flask specific configs
+    "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 300,
+}
 app = Flask(__name__)
+app.config.from_mapping(config)
+cache = Cache(app)
 app.jinja_env.globals.update(Domain=Domain)
 app.jinja_env.globals.update(WebComponent=WebComponent)
 app.jinja_env.globals.update(NEVER=NEVER)
@@ -67,6 +75,7 @@ def setup_session():
     if "uuid" not in session:
         session["uuid"] = str(uuid.uuid4())
         g.uuid_is_fresh = True
+
     else:
         g.uuid_is_fresh = False
     now = datetime.now()
@@ -83,14 +92,14 @@ def setup_session():
                 "error.html",
                 code=200,
                 message="Layer 8 error. If you want my data, DON'T SCRAPE (too much cpu load), contact me and I will "
-                        "give it to you",
+                "give it to you",
             ),
             200,
         )
 
     with db_session:
         req_log = RequestLog(
-            uuid=str(session["uuid"], 'utf-8'),
+            uuid=session["uuid"],
             uuid_is_fresh=g.uuid_is_fresh,
             created_at=now,
             agent=agent,
@@ -530,7 +539,10 @@ def port_list(ports):
             "port_list.html", domains=domains, ports=ports, port_list_str=port_list_str
         )
     else:
-        return render_template("error.html", code=404, message="no open ports found."), 404
+        return (
+            render_template("error.html", code=404, message="no open ports found."),
+            404,
+        )
 
 
 @app.route("/port/<ports>/json")
@@ -553,7 +565,10 @@ def port_list_json(ports):
     if len(domains) > 0:
         return jsonify(Domain.to_dict_list(domains))
     else:
-        return render_template("error.html", code=404, message="No open ports found."), 404
+        return (
+            render_template("error.html", code=404, message="No open ports found."),
+            404,
+        )
 
 
 @app.route("/bitcoin/<addr>")
@@ -577,7 +592,11 @@ def bitcoins_list():
         domains = Domain.hide_banned(btc_addr.domains())
         return render_template("bitcoin_list.html", domains=domains, addr=addr)
     else:
-        return render_template("error.html", code=404, message="Bitcoin not found."), 404
+        return (
+            render_template("error.html", code=404, message="Bitcoin not found."),
+            404,
+        )
+
 
 @app.route("/bitcoin/<addr>/json")
 @cached(timeout=HOUR_SEC, render_layout=False)
@@ -588,7 +607,10 @@ def bitcoin_list_json(addr):
         domains = Domain.hide_banned(btc_addr.domains())
         return jsonify(Domain.to_dict_list(domains))
     else:
-        return render_template("error.html", code=404, message="Bitcoin not found."), 404
+        return (
+            render_template("error.html", code=404, message="Bitcoin not found."),
+            404,
+        )
 
 
 @app.route("/favicon.ico")
@@ -632,23 +654,25 @@ def stats():
             for sl in SearchLog
             if sl.has_searchterms == True and sl.is_firstpage == True and sl.results > 0
         )
-            .order_by(raw_sql("sl.created_at DESC"))
-            .limit(10)
+        .order_by(raw_sql("sl.created_at DESC"))
+        .limit(10)
     )
 
-    searches = list(map(
-        lambda st: select(
-            sl
-            for sl in SearchLog
-            if sl.has_searchterms == True
-            and sl.is_firstpage == True
-            and sl.results > 0
-            and sl.searchterms == st
-        )
+    searches = list(
+        map(
+            lambda st: select(
+                sl
+                for sl in SearchLog
+                if sl.has_searchterms == True
+                and sl.is_firstpage == True
+                and sl.results > 0
+                and sl.searchterms == st
+            )
             .order_by(desc(SearchLog.created_at))
             .first(),
-        search_terms,
-    ))
+            search_terms,
+        )
+    )
 
     irc_servers = count(
         d for d in Domain for op in OpenPort if op.domain == d and op.port == 6667

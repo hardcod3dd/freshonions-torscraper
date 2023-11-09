@@ -8,7 +8,6 @@ import werkzeug.wrappers
 from flask import current_app as app
 import inspect
 import sys
-from werkzeug.contrib.cache import MemcachedCache
 import os
 import functools
 import logging
@@ -16,11 +15,6 @@ import logging
 CACHE_TIMEOUT = 60 * 60 * 24 * 365
 
 _cache = None
-if os.environ["MEMCACHED_ENABLED"] == "true":
-    _cache = MemcachedCache(
-        ["%s:%s" % (os.environ["MEMCACHED_HOST"], os.environ["MEMCACHED_PORT"])]
-    )
-
 _is_cached = False
 
 

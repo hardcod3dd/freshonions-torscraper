@@ -1,8 +1,8 @@
 import os
 from datetime import *
 from elasticsearch_dsl.connections import connections
-from elasticsearch_dsl import DocType, Date, Nested, Boolean, MetaField
-from elasticsearch_dsl import analyzer, InnerObjectWrapper, Text, Integer
+from elasticsearch_dsl import DocType, Date, Boolean, MetaField
+from elasticsearch_dsl import analyzer, Text, Integer
 from elasticsearch import serializer, compat, exceptions
 from elasticsearch_dsl import Search
 from elasticsearch_dsl import Q
@@ -70,26 +70,28 @@ def elasticsearch_pages(context, sort, page):
 
     limit = max_result_limit if context["more"] else result_limit
 
-    has_parent_query = Q("has_parent", type="domain", query=domain_query)
+    has_parent_query = Q("has_parent", query=domain_query)
     if context["phrase"]:
+        logging.getLogger().info("search for phrase")
         query = (
             Search()
-            .filter(has_parent_query)
+#            .filter(has_parent_query)
             .query(Q("match_phrase", body_stripped=context["search"]))
         )
     else:
+        logging.getLogger().info("search NOT for phrase")
         query = (
             Search()
-            .filter(has_parent_query)
+#            .filter(has_parent_query)
             .query(Q("match", body_stripped=context["search"]))
         )
 
     query = query.highlight_options(order="score", encoder="html").highlight(
         "body_stripped"
     )[start:end]
-    query = query.source(["title", "domain_id", "created_at", "visited_at"]).params(
-        request_cache=True
-    )
+    #query = query.source(["title", "domain_id", "created_at", "visited_at"]).params(
+    #    request_cache=True
+    #)
 
     if context["sort"] == "onion":
         query = query.sort("_parent")
@@ -99,6 +101,8 @@ def elasticsearch_pages(context, sort, page):
         query = query.sort("-created_at")
     elif context["sort"] == "last_seen":
         query = query.sort("-visited_at")
+
+    print(query)
 
     return query.execute()
 
@@ -128,6 +132,8 @@ class DomainDocType(DocType):
     class Meta:
         name = "domain"
         doc_type = "domain"
+    class Index:
+        name = 'domain'
 
     @classmethod
     def get_indexable(cls):
@@ -161,7 +167,7 @@ class PageDocType(DocType):
     html_strip = analyzer(
         "html_strip",
         tokenizer="standard",
-        filter=["standard", "lowercase", "stop", "snowball", "asciifolding"],
+        filter=["lowercase", "stop", "snowball", "asciifolding"],
         char_filter=["html_strip"],
     )
 
@@ -178,7 +184,9 @@ class PageDocType(DocType):
     class Meta:
         name = "page"
         doc_type = "page"
-        parent = MetaField(type="domain")
+        parent = MetaField(tag="domain")
+    class Index:
+        name = 'page'
 
     @classmethod
     def get_indexable(cls):
@@ -209,7 +217,6 @@ if is_elasticsearch_enabled():
         timeout=int(os.environ["ELASTICSEARCH_TIMEOUT"]),
     )
     hidden_services = Index("hiddenservices")
-    hidden_services.doc_type(DomainDocType)
     hidden_services.doc_type(PageDocType)
 
 
@@ -217,12 +224,11 @@ def migrate():
     hidden_services = Index("hiddenservices")
     hidden_services.delete(ignore=404)
     hidden_services = Index("hiddenservices")
-    hidden_services.doc_type(DomainDocType)
     hidden_services.doc_type(PageDocType)
     hidden_services.settings(number_of_shards=8, number_of_replicas=1)
     hidden_services.create()
 
 
 tracer = logging.getLogger("elasticsearch")
-tracer.setLevel(logging.CRITICAL)
-url_log = logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+tracer.setLevel(logging.DEBUG)
+url_log = logging.getLogger("urllib3").setLevel(logging.DEBUG)

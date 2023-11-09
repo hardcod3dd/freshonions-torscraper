@@ -190,7 +190,7 @@ CREATE TABLE `domain` (
   KEY `idx_domain__clone_group` (`clone_group`),
   KEY `idx_domain__new_clone_group` (`new_clone_group`),
   KEY `language_idx` (`language`),
-  KEY `idx_domain_title` (`title`(255)),
+  KEY `idx_domain_title` (`title`(65535)),
   CONSTRAINT `fk_domain__clone_group` FOREIGN KEY (`clone_group`) REFERENCES `clone_group` (`id`),
   CONSTRAINT `fk_domain__new_clone_group` FOREIGN KEY (`new_clone_group`) REFERENCES `clone_group` (`id`),
   CONSTRAINT `fk_domain__ssh_fingerprint` FOREIGN KEY (`ssh_fingerprint`) REFERENCES `ssh_fingerprint` (`id`)

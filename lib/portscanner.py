@@ -97,7 +97,6 @@ class Connection:
         self.active_host = None
         self.current_port = None
 
-
     def next_port(self):
         self.current_port = self.active_host.next_port()
         if self.current_port:
@@ -121,13 +120,15 @@ class Connection:
         for port in PORTS.keys():
             try:
                 s = socks.socksocket()
-                s.set_proxy(proxy_type=socks.SOCKS5, 
-                    addr=TOR_PROXY_HOST, 
-                    port=TOR_PROXY_PORT)
+                s.set_proxy(
+                    proxy_type=socks.SOCKS5, addr=TOR_PROXY_HOST, port=TOR_PROXY_PORT
+                )
                 s.connect((self.active_host.hostname, self.current_port))
                 self.active_host.add_open_port(self.current_port)
             except Exception as e:
                 print("Failed to scan {} -- {}".format(self.active_host.hostname, e))
+
+
 class ActiveHost:
     @db_session
     def __init__(self, hostname):

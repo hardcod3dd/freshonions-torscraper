@@ -27,7 +27,7 @@ def render_elasticsearch(context, json=False):
     page = context["page"]
     sort = context["sort"]
     results = elasticsearch_pages(context, sort, page)
-    orig_count = results.hits.total['value']
+    orig_count = results.hits.total["value"]
     n_results = result_limit if orig_count > result_limit else orig_count
     is_more = orig_count > result_limit
 

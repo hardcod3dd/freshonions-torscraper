@@ -75,23 +75,23 @@ def elasticsearch_pages(context, sort, page):
         logging.getLogger().info("search for phrase")
         query = (
             Search()
-#            .filter(has_parent_query)
+            #            .filter(has_parent_query)
             .query(Q("match_phrase", body_stripped=context["search"]))
         )
     else:
         logging.getLogger().info("search NOT for phrase")
         query = (
             Search()
-#            .filter(has_parent_query)
+            #            .filter(has_parent_query)
             .query(Q("match", body_stripped=context["search"]))
         )
 
     query = query.highlight_options(order="score", encoder="html").highlight(
         "body_stripped"
     )[start:end]
-    #query = query.source(["title", "domain_id", "created_at", "visited_at"]).params(
+    # query = query.source(["title", "domain_id", "created_at", "visited_at"]).params(
     #    request_cache=True
-    #)
+    # )
 
     if context["sort"] == "onion":
         query = query.sort("_parent")
@@ -132,8 +132,9 @@ class DomainDocType(DocType):
     class Meta:
         name = "domain"
         doc_type = "domain"
+
     class Index:
-        name = 'domain'
+        name = "domain"
 
     @classmethod
     def get_indexable(cls):
@@ -185,8 +186,9 @@ class PageDocType(DocType):
         name = "page"
         doc_type = "page"
         parent = MetaField(tag="domain")
+
     class Index:
-        name = 'page'
+        name = "page"
 
     @classmethod
     def get_indexable(cls):

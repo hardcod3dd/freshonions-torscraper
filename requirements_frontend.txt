@@ -1,4 +1,5 @@
 flask
+Flask-Caching
 scrapy
 pony
 PyMySQL
@@ -18,5 +19,6 @@ pycountry
 networkx
 python-memcached
 pillow
-werkzeug==0.15.3
+#werkzeug==0.15.3
+werkzeug
 timeout-decorator

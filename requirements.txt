@@ -4,8 +4,8 @@ pony
 PyMySQL
 py-pretty
 pycrypto
-elasticsearch>=5.0.0,<6.0.0
-elasticsearch-dsl>=5.0.0,<6.0.0
+elasticsearch>=6.0.0,<7.0.0
+elasticsearch-dsl>=6.0.0,<7.0.0
 python-dateutil
 Twisted
 PySocks
@@ -20,3 +20,5 @@ python-memcached
 pillow
 werkzeug==0.15.3
 timeout-decorator
+bitcoin
+markupsafe==2.0.1

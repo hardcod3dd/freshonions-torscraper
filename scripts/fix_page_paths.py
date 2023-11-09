@@ -2,7 +2,7 @@
 from pony.orm import *
 from datetime import *
 from tor_db import *
-import urlparse
+import urllib.parse
 import portscanner
 import sys
 
@@ -26,7 +26,7 @@ def fix_paths():
 
         for p in ary:
             p.path = Page.path_from_url(p.url)
-            print("Set path %s for %s" % (p.path, p.url))
+            print(("Set path %s for %s" % (p.path, p.url)))
 
         commit()
 

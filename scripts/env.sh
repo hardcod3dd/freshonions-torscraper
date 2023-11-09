@@ -30,8 +30,8 @@ export MAX_RESULT_LIMIT
 export SITE_PATH
 export SITE_DOMAIN
 
-. $ETCDIR/private/flask.secret
-export FLASK_SECRET
+#. $ETCDIR/private/flask.secret
+#export FLASK_SECRET
 
 . $ETCDIR/memcached
 export MEMCACHED_ENABLED

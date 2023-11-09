@@ -9,7 +9,7 @@ import sys
 def get_domains():
     domains = select(d for d in Domain if d.is_up == True)
     for domain in domains:
-        print(domain.host)
+        print((domain.host))
 
 
 get_domains()

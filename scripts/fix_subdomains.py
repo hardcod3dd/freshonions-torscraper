@@ -10,7 +10,7 @@ import sys
 def fix_subdomains():
     domains = select(d for d in Domain)
     for domain in domains:
-        print(domain.host)
+        print((domain.host))
         if domain.host.count(".") > 1:
             domain.is_subdomain = True
 

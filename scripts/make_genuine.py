@@ -11,11 +11,11 @@ def make_genuine():
     for host in lines:
         domain = select(d for d in Domain if d.host == host).first()
         if not domain:
-            print("Couldn't find %s" % host)
+            print(("Couldn't find %s" % host))
             continue
         if domain.is_genuine:
             continue
-        print("Marking %s as genuine" % host)
+        print(("Marking %s as genuine" % host))
         Domain.make_genuine(host)
 
 

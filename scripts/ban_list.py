@@ -9,8 +9,8 @@ from tabulate import tabulate
 @db_session
 def list_banned():
     domains = Domain.banned()
-    data = map(lambda d: [d.index_url(), d.title], domains)
-    print(tabulate(data))
+    data = [[d.index_url(), d.title] for d in domains]
+    print((tabulate(data)))
 
 
 list_banned()

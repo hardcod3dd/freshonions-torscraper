@@ -36,18 +36,18 @@ def build_graph():
             graph.add_edge(domain.host, link.host)
 
         if (i % 10) == 0:
-            print("Processed %d / %d" % (i, total))
+            print(("Processed %d / %d" % (i, total)))
 
     return graph
 
 
 if len(sys.argv) < 2:
-    print("Usage %s filename.gexf", sys.argv[0])
+    print(("Usage %s filename.gexf", sys.argv[0]))
     sys.exit(1)
 
 print("Building graph...")
 graph = build_graph()
-print("Saving '%s'..." % sys.argv[1])
+print(("Saving '%s'..." % sys.argv[1]))
 networkx.write_gexf(graph, sys.argv[1])
 
 sys.exit(0)

@@ -12,7 +12,7 @@ def add_domains():
     for domain in domains:
         dom = DomainDocType.from_obj(domain)
         dom.save()
-        print(domain.host)
+        print((domain.host))
 
 
 if is_elasticsearch_enabled():

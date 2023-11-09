@@ -26,7 +26,7 @@ def get_domains_since_file_mod(fname):
         d for d in Domain if d.created_at > creation_horizon and d.last_alive != NEVER
     )
     for domain in domains:
-        print(domain.host)
+        print((domain.host))
 
 
 get_domains_since_file_mod(sys.argv[1])

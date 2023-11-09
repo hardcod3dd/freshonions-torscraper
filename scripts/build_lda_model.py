@@ -13,22 +13,22 @@ logging.basicConfig(
 )
 
 if len(sys.argv) < 3:
-    print "Usage %s NTOPICS NPASSES" % sys.argv[0]
+    print("Usage %s NTOPICS NPASSES" % sys.argv[0])
     sys.exit(1)
 
 TOPICS = int(sys.argv[1])
 PASSES = int(sys.argv[2])
 
-print "Loading dictionary..."
+print("Loading dictionary...")
 dictionary = corpora.Dictionary.load(corpus.DICTIONARY_PATH)
-print "Loading corpus..."
+print("Loading corpus...")
 corp = corpus.load_corpus()
-print "Building LDA model..."
+print("Building LDA model...")
 ldamodel = gensim.models.ldamodel.LdaModel(
     corp, num_topics=TOPICS, id2word=dictionary, passes=PASSES, chunksize=CHUNKSIZE
 )
-print "Saving model"
+print("Saving model")
 ldamodel.save(corpus.MODEL_PATH)
-print (ldamodel.print_topics(num_topics=TOPICS, num_words=10))
-print "Done!"
+print((ldamodel.print_topics(num_topics=TOPICS, num_words=10)))
+print("Done!")
 sys.exit(0)

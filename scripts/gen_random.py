@@ -8,7 +8,7 @@ import sys
 def get_domains():
 
     if len(sys.argv) < 2:
-        print("Usage %s NUMBER" % sys.argv[0])
+        print(("Usage %s NUMBER" % sys.argv[0]))
         sys.exit(1)
     number = int(sys.argv[1])
     domains = Domain.random(number)

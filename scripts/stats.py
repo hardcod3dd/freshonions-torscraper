@@ -9,8 +9,8 @@ from tabulate import tabulate
 
 @db_session
 def list_stats():
-    data = list(DailyStat.get_stats().iteritems())
-    print(tabulate(sorted(data, key=itemgetter(0))))
+    data = list(DailyStat.get_stats().items())
+    print((tabulate(sorted(data, key=itemgetter(0)))))
 
 
 list_stats()

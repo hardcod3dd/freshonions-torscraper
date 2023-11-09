@@ -3,8 +3,8 @@ from pony.orm import *
 from datetime import *
 from tor_db import *
 import sys
-import urllib2
-from urllib2 import URLError
+from urllib.request import urlopen
+from urllib.error import URLError
 import random
 import string
 import socket
@@ -26,7 +26,7 @@ def scan_404():
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     domains = get_domains()
-    print("processing %d domains" % count(domains))
+    print(("processing %d domains" % count(domains)))
     i = 0
     for d in domains:
         i += 1
@@ -37,18 +37,18 @@ def scan_404():
         url = d.index_url() + r
         code = 0
         try:
-            res = urllib2.urlopen(url, None, 60, context=ctx)
+            res = urlopen(url, None, 60, context=ctx)
             code = int(res.getcode())
-        except urllib2.HTTPError, e:
+        except urllib.request.HTTPError as e:
             code = int(e.code)
         except (URLError, socket.timeout, ssl.CertificateError) as e:
-            print("#%d failed (%s)" % (i, url))
+            print(("#%d failed (%s)" % (i, url)))
             continue
 
         if code in [502, 503]:
-            print("#%d failed (%s)" % (i, url))
+            print(("#%d failed (%s)" % (i, url)))
             continue
-        print("#%d tested %s and got %d" % (i, url, code))
+        print(("#%d tested %s and got %d" % (i, url, code)))
         try:
             if code == 404:
                 d.useful_404 = True

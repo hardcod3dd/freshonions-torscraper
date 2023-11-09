@@ -12,7 +12,7 @@ def print_lines():
         try:
             d = Domain.get(host=line)
             if not d:
-                print line
+                print(line)
         except:
             continue
 

@@ -9,17 +9,17 @@ import sys
 def mark_genuine_or_fake(host, genuine):
     domain = Domain.find_by_url(host)
     if not domain:
-        print("Domain %s not found!" % host)
+        print(("Domain %s not found!" % host))
         sys.exit(1)
     domain.manual_genuine = True
     if genuine:
         domain.is_genuine = True
         domain.is_fake = False
-        print("Marked %s as genuine" % host)
+        print(("Marked %s as genuine" % host))
     else:
         domain.is_genuine = False
         domain.is_fake = True
-        print("Marked %s as fake" % host)
+        print(("Marked %s as fake" % host))
     commit()
 
 

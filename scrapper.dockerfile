@@ -7,14 +7,16 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONFAULTHANDLER 1
 
 FROM base AS python-deps
-RUN apt-get update && apt-get install -y gcc
+RUN apt-get update && apt-get install -y gcc wget curl
 # Install deps
 COPY requirements.txt .
-RUN pip install --user -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 FROM python-deps AS runtime
 WORKDIR /home/freshonions
 ADD . /home/freshonions
+RUN mkdir .cache
+RUN chmod 755 .cache
 RUN pip install -r requirements.txt
 RUN groupadd -r freshonions && useradd --no-log-init -r -g freshonions freshonions
 USER freshonions

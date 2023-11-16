@@ -5,5 +5,5 @@ DIR=$( cd "$(dirname "$0")" ; pwd -P )
 while true
 do
   $SCRIPTDIR/scrape.sh
-  sleep 300
+  sleep 900
 done

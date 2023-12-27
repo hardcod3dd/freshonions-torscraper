@@ -101,3 +101,6 @@
 /web/
 /webalizer/
 /webdav/
+/mirrors.txt
+/pgp.txt
+/canary.txt
